@@ -14,7 +14,303 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cash_movements: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          kind: string
+          occurred_at: string
+          order_id: string | null
+          owner_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          kind?: string
+          occurred_at?: string
+          order_id?: string | null
+          owner_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          kind?: string
+          occurred_at?: string
+          order_id?: string | null
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: string | null
+          created_at: string
+          document: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          owner_id: string
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      order_status_events: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          order_id: string
+          owner_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          order_id: string
+          owner_id: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          order_id?: string
+          owner_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parts: {
+        Row: {
+          category: string | null
+          cost_price: number
+          created_at: string
+          id: string
+          min_quantity: number
+          name: string
+          owner_id: string
+          quantity: number
+          sale_price: number
+          sku: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          cost_price?: number
+          created_at?: string
+          id?: string
+          min_quantity?: number
+          name: string
+          owner_id: string
+          quantity?: number
+          sale_price?: number
+          sku?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          cost_price?: number
+          created_at?: string
+          id?: string
+          min_quantity?: number
+          name?: string
+          owner_id?: string
+          quantity?: number
+          sale_price?: number
+          sku?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      service_order_parts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          order_id: string
+          owner_id: string
+          part_id: string | null
+          quantity: number
+          unit_cost: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          order_id: string
+          owner_id: string
+          part_id?: string | null
+          quantity?: number
+          unit_cost?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          order_id?: string
+          owner_id?: string
+          part_id?: string | null
+          quantity?: number
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_order_parts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_order_parts_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_orders: {
+        Row: {
+          brand: string | null
+          checklist: string[]
+          created_at: string
+          customer_id: string
+          device_type: string
+          diagnosis: string | null
+          finished_at: string | null
+          id: string
+          model: string | null
+          notes: string | null
+          number: number
+          owner_id: string
+          parts_cost: number
+          password_type: string
+          password_value: string | null
+          photos: string[]
+          public_token: string
+          quote_responded_at: string | null
+          quote_status: string
+          reported_issue: string
+          serial_number: string | null
+          service_price: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          brand?: string | null
+          checklist?: string[]
+          created_at?: string
+          customer_id: string
+          device_type: string
+          diagnosis?: string | null
+          finished_at?: string | null
+          id?: string
+          model?: string | null
+          notes?: string | null
+          number?: number
+          owner_id: string
+          parts_cost?: number
+          password_type?: string
+          password_value?: string | null
+          photos?: string[]
+          public_token?: string
+          quote_responded_at?: string | null
+          quote_status?: string
+          reported_issue?: string
+          serial_number?: string | null
+          service_price?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          brand?: string | null
+          checklist?: string[]
+          created_at?: string
+          customer_id?: string
+          device_type?: string
+          diagnosis?: string | null
+          finished_at?: string | null
+          id?: string
+          model?: string | null
+          notes?: string | null
+          number?: number
+          owner_id?: string
+          parts_cost?: number
+          password_type?: string
+          password_value?: string | null
+          photos?: string[]
+          public_token?: string
+          quote_responded_at?: string | null
+          quote_status?: string
+          reported_issue?: string
+          serial_number?: string | null
+          service_price?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
