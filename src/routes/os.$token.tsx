@@ -106,7 +106,7 @@ function PublicOrder() {
           <h2 className="mb-4 text-lg font-semibold">Acompanhamento do serviço</h2>
           <div className="space-y-4">
             {FLOW.map((s, i) => {
-              const Icon = ICONS[i];
+              const Icon = ICONS[i] ?? Clock;
               const done = i <= currentIndex;
               return (
                 <div key={s} className="flex items-center gap-3">
