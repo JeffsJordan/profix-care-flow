@@ -56,7 +56,10 @@ function OrderDetail() {
       if (!owner_id || !order) throw new Error("Sessão expirada");
       const { error } = await supabase
         .from("service_orders")
-        .update({ status, completed_at: status === "finalizado" ? new Date().toISOString() : order.completed_at })
+        .update({
+          status,
+          finished_at: status === "finalizado" ? new Date().toISOString() : order.finished_at,
+        })
         .eq("id", order.id);
       if (error) throw error;
       await supabase.from("order_status_events").insert({ owner_id, order_id: order.id, status });
