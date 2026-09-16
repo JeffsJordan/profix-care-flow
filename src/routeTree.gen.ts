@@ -17,6 +17,7 @@ import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedEstoqueRouteImport } from './routes/_authenticated/estoque'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
+import { Route as OsTokenRouteImport } from './routes/os.$token'
 import { Route as AuthenticatedOrdensIndexRouteImport } from './routes/_authenticated/ordens.index'
 import { Route as AuthenticatedOrdensIdRouteImport } from './routes/_authenticated/ordens.$id'
 import { Route as AuthenticatedOrdensNovaRouteImport } from './routes/_authenticated/ordens.nova'
@@ -60,6 +61,11 @@ const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
   path: '/relatorios',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const OsTokenRoute = OsTokenRouteImport.update({
+  id: '/os/$token',
+  path: '/os/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedOrdensIndexRoute =
   AuthenticatedOrdensIndexRouteImport.update({
     id: '/ordens/',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/estoque': typeof AuthenticatedEstoqueRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
+  '/os/$token': typeof OsTokenRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/nova': typeof AuthenticatedOrdensNovaRoute
   '/ordens/': typeof AuthenticatedOrdensIndexRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/estoque': typeof AuthenticatedEstoqueRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
+  '/os/$token': typeof OsTokenRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/nova': typeof AuthenticatedOrdensNovaRoute
   '/ordens': typeof AuthenticatedOrdensIndexRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/_authenticated/estoque': typeof AuthenticatedEstoqueRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
+  '/os/$token': typeof OsTokenRoute
   '/_authenticated/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/_authenticated/ordens/nova': typeof AuthenticatedOrdensNovaRoute
   '/_authenticated/ordens/': typeof AuthenticatedOrdensIndexRoute
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/painel'
     | '/relatorios'
+    | '/os/$token'
     | '/ordens/$id'
     | '/ordens/nova'
     | '/ordens/'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/painel'
     | '/relatorios'
+    | '/os/$token'
     | '/ordens/$id'
     | '/ordens/nova'
     | '/ordens'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/_authenticated/estoque'
     | '/_authenticated/painel'
     | '/_authenticated/relatorios'
+    | '/os/$token'
     | '/_authenticated/ordens/$id'
     | '/_authenticated/ordens/nova'
     | '/_authenticated/ordens/'
@@ -159,6 +171,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  OsTokenRoute: typeof OsTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -219,6 +232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRelatoriosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/os/$token': {
+      id: '/os/$token'
+      path: '/os/$token'
+      fullPath: '/os/$token'
+      preLoaderRoute: typeof OsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/ordens/': {
       id: '/_authenticated/ordens/'
       path: '/ordens'
@@ -272,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  OsTokenRoute: OsTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
