@@ -5,7 +5,14 @@ import { AppShell } from "@/components/AppShell";
 import { Badge, Button, Card, EmptyState, statusTone } from "@/components/ui-kit";
 import { fetchCashMovements, fetchOrders } from "@/lib/data";
 import { openOrders, summarize } from "@/lib/metrics";
-import { QUOTE_LABEL, STATUS_LABEL, formatDate, formatMoney, orderNumber } from "@/lib/profix";
+import {
+  QUOTE_LABEL,
+  STATUS_LABEL,
+  formatDate,
+  formatMoney,
+  orderNumber,
+  quoteFromStatus,
+} from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/painel")({
   component: Painel,
@@ -91,7 +98,9 @@ function Painel() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge tone={statusTone(o.quote_status)}>{QUOTE_LABEL[o.quote_status]}</Badge>
+                <Badge tone={statusTone(quoteFromStatus(o.status))}>
+                  {QUOTE_LABEL[quoteFromStatus(o.status)]}
+                </Badge>
                 <Badge tone={statusTone(o.status)}>{STATUS_LABEL[o.status]}</Badge>
                 <span className="text-sm font-semibold">{formatMoney(o.service_price)}</span>
               </div>
