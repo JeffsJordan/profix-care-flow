@@ -109,7 +109,7 @@ export function Badge({
 export function statusTone(status: string) {
   if (status === "finalizado" || status === "entregue" || status === "aceito") return "green" as const;
   if (status === "em andamento") return "blue" as const;
-  if (status === "recusado") return "red" as const;
+  if (status === "recusado" || status === "rejeitada") return "red" as const;
   return "amber" as const;
 }
 

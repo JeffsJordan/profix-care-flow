@@ -28,12 +28,21 @@ export const CHECKLIST_ITEMS = [
   "Aparelho molhado",
 ];
 
-export const ORDER_STATUSES = ["recebido", "em andamento", "finalizado", "entregue"] as const;
+export const ORDER_STATUSES = [
+  "aguardando aprovacao",
+  "rejeitada",
+  "recebido",
+  "em andamento",
+  "finalizado",
+  "entregue",
+] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export const QUOTE_STATUSES = ["pendente", "aceito", "recusado"] as const;
 
 export const STATUS_LABEL: Record<string, string> = {
+  "aguardando aprovacao": "Aguardando aprovação",
+  rejeitada: "Rejeitada",
   recebido: "Recebido",
   "em andamento": "Em andamento",
   finalizado: "Finalizado",
@@ -45,6 +54,13 @@ export const QUOTE_LABEL: Record<string, string> = {
   aceito: "Serviço contratado",
   recusado: "Orçamento recusado",
 };
+
+/** O status da OS é a fonte de verdade da situação do orçamento. */
+export function quoteFromStatus(status: string) {
+  if (status === "aguardando aprovacao") return "pendente";
+  if (status === "rejeitada") return "recusado";
+  return "aceito";
+}
 
 export function formatMoney(value: number | string | null | undefined) {
   const n = Number(value ?? 0);
