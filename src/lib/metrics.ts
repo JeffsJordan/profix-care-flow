@@ -1,5 +1,5 @@
 import type { CashMovement, OrderWithCustomer } from "./data";
-import { periodStart } from "./profix";
+import { periodStart, quoteFromStatus } from "./profix";
 
 export type Period = "dia" | "semana" | "mes" | "ano";
 
@@ -17,7 +17,10 @@ export function summarize(
 
   const created = orders.filter((o) => inPeriod(o.created_at));
   const billed = orders.filter(
-    (o) => isConcluded(o) && o.quote_status === "aceito" && inPeriod(o.finished_at ?? o.updated_at),
+    (o) =>
+      isConcluded(o) &&
+      quoteFromStatus(o.status) === "aceito" &&
+      inPeriod(o.finished_at ?? o.updated_at),
   );
 
   const revenue = billed.reduce((s, o) => s + Number(o.service_price), 0);
@@ -31,9 +34,9 @@ export function summarize(
     .reduce((s, m) => s + Number(m.amount), 0);
 
   const quotesSent = created.length;
-  const accepted = created.filter((o) => o.quote_status === "aceito").length;
-  const rejected = created.filter((o) => o.quote_status === "recusado").length;
-  const pending = created.filter((o) => o.quote_status === "pendente").length;
+  const accepted = created.filter((o) => quoteFromStatus(o.status) === "aceito").length;
+  const rejected = created.filter((o) => quoteFromStatus(o.status) === "recusado").length;
+  const pending = created.filter((o) => quoteFromStatus(o.status) === "pendente").length;
 
   return {
     revenue,
