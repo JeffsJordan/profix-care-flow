@@ -30,6 +30,7 @@ function OrderDetail() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const [printMode, setPrintMode] = useState<PrintMode>(null);
+  const [justChanged, setJustChanged] = useState<string | null>(null);
 
   const { data: order, isLoading } = useQuery({ queryKey: ["order", id], queryFn: () => fetchOrder(id) });
   const { data: usedParts = [] } = useQuery({ queryKey: ["order-parts", id], queryFn: () => fetchOrderParts(id) });
@@ -58,14 +59,19 @@ function OrderDetail() {
         .from("service_orders")
         .update({
           status,
+          quote_status: quoteFromStatus(status),
+          quote_responded_at:
+            status === "aguardando aprovacao" ? null : (order.quote_responded_at ?? new Date().toISOString()),
           finished_at: status === "finalizado" ? new Date().toISOString() : order.finished_at,
         })
         .eq("id", order.id);
       if (error) throw error;
       await supabase.from("order_status_events").insert({ owner_id, order_id: order.id, status });
+      return status;
     },
-    onSuccess: () => {
-      toast.success("Status atualizado");
+    onSuccess: (status) => {
+      setJustChanged(STATUS_LABEL[status] ?? status);
+      toast.success("Status atualizado — envie o aviso no WhatsApp");
       queryClient.invalidateQueries();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao atualizar"),
