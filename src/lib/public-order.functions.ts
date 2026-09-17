@@ -74,22 +74,24 @@ export const respondPublicQuote = createServerFn({ method: "POST" })
       return { ok: false, message: "Este orçamento já foi respondido." };
     }
 
+    const nextStatus = data.decision === "aceito" ? "recebido" : "rejeitada";
+
     const { error: updateError } = await supabaseAdmin
       .from("service_orders")
-      .update({ quote_status: data.decision, quote_responded_at: new Date().toISOString() })
+      .update({
+        quote_status: data.decision,
+        status: nextStatus,
+        quote_responded_at: new Date().toISOString(),
+      })
       .eq("id", row.id);
     if (updateError) throw new Error("Não foi possível registrar a resposta");
 
     await supabaseAdmin.from("order_status_events").insert({
       owner_id: row.owner_id,
       order_id: row.id,
-      status: data.decision === "aceito" ? "em andamento" : "recebido",
+      status: nextStatus,
       note: data.decision === "aceito" ? "Serviço contratado pelo cliente" : "Orçamento recusado pelo cliente",
     });
-
-    if (data.decision === "aceito") {
-      await supabaseAdmin.from("service_orders").update({ status: "em andamento" }).eq("id", row.id);
-    }
 
     return { ok: true, message: data.decision === "aceito" ? "Serviço contratado!" : "Orçamento recusado." };
   });

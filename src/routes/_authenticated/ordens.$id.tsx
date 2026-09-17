@@ -17,6 +17,7 @@ import {
   formatMoney,
   orderNumber,
   publicOrderUrl,
+  quoteFromStatus,
   whatsappLink,
 } from "@/lib/profix";
 
@@ -30,6 +31,7 @@ function OrderDetail() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const [printMode, setPrintMode] = useState<PrintMode>(null);
+  const [justChanged, setJustChanged] = useState<string | null>(null);
 
   const { data: order, isLoading } = useQuery({ queryKey: ["order", id], queryFn: () => fetchOrder(id) });
   const { data: usedParts = [] } = useQuery({ queryKey: ["order-parts", id], queryFn: () => fetchOrderParts(id) });
@@ -58,14 +60,19 @@ function OrderDetail() {
         .from("service_orders")
         .update({
           status,
+          quote_status: quoteFromStatus(status),
+          quote_responded_at:
+            status === "aguardando aprovacao" ? null : (order.quote_responded_at ?? new Date().toISOString()),
           finished_at: status === "finalizado" ? new Date().toISOString() : order.finished_at,
         })
         .eq("id", order.id);
       if (error) throw error;
       await supabase.from("order_status_events").insert({ owner_id, order_id: order.id, status });
+      return status;
     },
-    onSuccess: () => {
-      toast.success("Status atualizado");
+    onSuccess: (status) => {
+      setJustChanged(STATUS_LABEL[status] ?? status);
+      toast.success("Status atualizado — envie o aviso no WhatsApp");
       queryClient.invalidateQueries();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao atualizar"),
@@ -92,16 +99,17 @@ function OrderDetail() {
 
   const osMessage =
     `*ProFix Assistência Técnica*\n` +
-    `Olá, ${order.customer?.name ?? ""}! Sua ordem de serviço ${orderNumber(order.number)} está pronta para conferência.\n\n` +
+    `Olá, ${order.customer?.name ?? ""}! Sua ordem de serviço ${orderNumber(order.number)} foi registrada.\n\n` +
     `Aparelho: ${deviceLine}\n` +
+    `Avaria relatada: ${order.reported_issue || "—"}\n` +
     `Serviço: ${formatMoney(order.service_price)}\n\n` +
-    `Veja os detalhes e aprove o orçamento neste link:\n${link}`;
+    `Qualquer dúvida, é só responder por aqui.`;
 
   const statusMessage =
     `*ProFix* — atualização da ${orderNumber(order.number)}\n` +
     `Aparelho: ${deviceLine}\n` +
     `Status atual: *${STATUS_LABEL[order.status] ?? order.status}*\n\n` +
-    `Acompanhe pelo link: ${link}`;
+    `Qualquer dúvida, é só responder por aqui.`;
 
   return (
     <AppShell
@@ -217,11 +225,29 @@ function OrderDetail() {
                 ))}
               </Select>
             </Field>
-            <a href={whatsappLink(order.customer?.phone ?? "", statusMessage)} target="_blank" rel="noreferrer">
-              <Button className="mt-3 w-full">
-                <Send className="h-4 w-4" /> Avisar status no WhatsApp
-              </Button>
-            </a>
+            {justChanged ? (
+              <div className="mt-3 rounded-lg border border-primary/40 bg-primary/10 p-3">
+                <p className="text-xs font-semibold text-primary">
+                  Status alterado para “{justChanged}”. Avise o cliente:
+                </p>
+                <a
+                  href={whatsappLink(order.customer?.phone ?? "", statusMessage)}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setJustChanged(null)}
+                >
+                  <Button className="mt-2 w-full">
+                    <Send className="h-4 w-4" /> Enviar atualização pelo WhatsApp
+                  </Button>
+                </a>
+              </div>
+            ) : (
+              <a href={whatsappLink(order.customer?.phone ?? "", statusMessage)} target="_blank" rel="noreferrer">
+                <Button variant="outline" className="mt-3 w-full">
+                  <Send className="h-4 w-4" /> Avisar status no WhatsApp
+                </Button>
+              </a>
+            )}
           </Card>
 
           <Card>

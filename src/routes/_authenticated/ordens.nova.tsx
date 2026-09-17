@@ -117,6 +117,8 @@ function NovaOS() {
         .insert({
           owner_id,
           customer_id: finalCustomerId,
+          status: "aguardando aprovacao",
+          quote_status: "pendente",
           device_type: device.device_type,
           brand: device.brand.trim() || null,
           model: device.model.trim() || null,
@@ -160,8 +162,8 @@ function NovaOS() {
       await supabase.from("order_status_events").insert({
         owner_id,
         order_id: order.id,
-        status: "recebido",
-        note: "Aparelho recebido na assistência",
+        status: "aguardando aprovacao",
+        note: "OS criada, aguardando aprovação do cliente",
       });
 
       return order as { id: string; number: number };
