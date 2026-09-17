@@ -99,16 +99,17 @@ function OrderDetail() {
 
   const osMessage =
     `*ProFix Assistência Técnica*\n` +
-    `Olá, ${order.customer?.name ?? ""}! Sua ordem de serviço ${orderNumber(order.number)} está pronta para conferência.\n\n` +
+    `Olá, ${order.customer?.name ?? ""}! Sua ordem de serviço ${orderNumber(order.number)} foi registrada.\n\n` +
     `Aparelho: ${deviceLine}\n` +
+    `Avaria relatada: ${order.reported_issue || "—"}\n` +
     `Serviço: ${formatMoney(order.service_price)}\n\n` +
-    `Veja os detalhes e aprove o orçamento neste link:\n${link}`;
+    `Qualquer dúvida, é só responder por aqui.`;
 
   const statusMessage =
     `*ProFix* — atualização da ${orderNumber(order.number)}\n` +
     `Aparelho: ${deviceLine}\n` +
     `Status atual: *${STATUS_LABEL[order.status] ?? order.status}*\n\n` +
-    `Acompanhe pelo link: ${link}`;
+    `Qualquer dúvida, é só responder por aqui.`;
 
   return (
     <AppShell
