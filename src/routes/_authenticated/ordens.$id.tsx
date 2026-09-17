@@ -225,11 +225,29 @@ function OrderDetail() {
                 ))}
               </Select>
             </Field>
-            <a href={whatsappLink(order.customer?.phone ?? "", statusMessage)} target="_blank" rel="noreferrer">
-              <Button className="mt-3 w-full">
-                <Send className="h-4 w-4" /> Avisar status no WhatsApp
-              </Button>
-            </a>
+            {justChanged ? (
+              <div className="mt-3 rounded-lg border border-primary/40 bg-primary/10 p-3">
+                <p className="text-xs font-semibold text-primary">
+                  Status alterado para “{justChanged}”. Avise o cliente:
+                </p>
+                <a
+                  href={whatsappLink(order.customer?.phone ?? "", statusMessage)}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setJustChanged(null)}
+                >
+                  <Button className="mt-2 w-full">
+                    <Send className="h-4 w-4" /> Enviar atualização pelo WhatsApp
+                  </Button>
+                </a>
+              </div>
+            ) : (
+              <a href={whatsappLink(order.customer?.phone ?? "", statusMessage)} target="_blank" rel="noreferrer">
+                <Button variant="outline" className="mt-3 w-full">
+                  <Send className="h-4 w-4" /> Avisar status no WhatsApp
+                </Button>
+              </a>
+            )}
           </Card>
 
           <Card>
