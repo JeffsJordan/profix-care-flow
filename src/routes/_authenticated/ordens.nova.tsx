@@ -8,7 +8,7 @@ import { PatternLock } from "@/components/PatternLock";
 import { Badge, Button, Card, Field, Input, Select, Textarea } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCustomers, fetchParts, type Part } from "@/lib/data";
-import { CHECKLIST_ITEMS, DEVICE_TYPES, formatMoney, orderNumber } from "@/lib/profix";
+import { DEVICE_TYPES, checklistFor, formatMoney, orderNumber } from "@/lib/profix";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/ordens/nova")({
@@ -313,7 +313,10 @@ function NovaOS() {
                     key={t}
                     variant={device.device_type === t ? "primary" : "outline"}
                     size="sm"
-                    onClick={() => setDevice({ ...device, device_type: t })}
+                    onClick={() => {
+                      if (t !== device.device_type) setChecklist([]);
+                      setDevice({ ...device, device_type: t });
+                    }}
                   >
                     {t}
                   </Button>
@@ -377,10 +380,10 @@ function NovaOS() {
 
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Checklist físico do aparelho
+                Checklist físico {device.device_type ? `· ${device.device_type}` : "do aparelho"}
               </p>
               <div className="flex flex-wrap gap-2">
-                {CHECKLIST_ITEMS.map((item) => {
+                {checklistFor(device.device_type).map((item) => {
                   const active = checklist.includes(item);
                   return (
                     <button
