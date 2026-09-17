@@ -380,10 +380,10 @@ function NovaOS() {
 
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Checklist físico do aparelho
+                Checklist físico {device.device_type ? `· ${device.device_type}` : "do aparelho"}
               </p>
               <div className="flex flex-wrap gap-2">
-                {CHECKLIST_ITEMS.map((item) => {
+                {checklistFor(device.device_type).map((item) => {
                   const active = checklist.includes(item);
                   return (
                     <button
