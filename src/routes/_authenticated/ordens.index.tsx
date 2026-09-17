@@ -112,7 +112,9 @@ function Ordens() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge tone={statusTone(o.quote_status)}>{QUOTE_LABEL[o.quote_status]}</Badge>
+              <Badge tone={statusTone(quoteFromStatus(o.status))}>
+                {QUOTE_LABEL[quoteFromStatus(o.status)]}
+              </Badge>
               <Badge tone={statusTone(o.status)}>{STATUS_LABEL[o.status]}</Badge>
               <span className="text-sm font-semibold">{formatMoney(o.service_price)}</span>
               <Link to="/ordens/$id" params={{ id: o.id }}>
