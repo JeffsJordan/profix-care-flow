@@ -8,7 +8,7 @@ import { PatternLock } from "@/components/PatternLock";
 import { Badge, Button, Card, Field, Input, Select, Textarea } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCustomers, fetchParts, type Part } from "@/lib/data";
-import { CHECKLIST_ITEMS, DEVICE_TYPES, formatMoney, orderNumber } from "@/lib/profix";
+import { DEVICE_TYPES, checklistFor, formatMoney, orderNumber } from "@/lib/profix";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/ordens/nova")({
@@ -313,7 +313,10 @@ function NovaOS() {
                     key={t}
                     variant={device.device_type === t ? "primary" : "outline"}
                     size="sm"
-                    onClick={() => setDevice({ ...device, device_type: t })}
+                    onClick={() => {
+                      if (t !== device.device_type) setChecklist([]);
+                      setDevice({ ...device, device_type: t });
+                    }}
                   >
                     {t}
                   </Button>
