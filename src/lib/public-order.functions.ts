@@ -95,3 +95,29 @@ export const respondPublicQuote = createServerFn({ method: "POST" })
 
     return { ok: true, message: data.decision === "aceito" ? "Serviço contratado!" : "Orçamento recusado." };
   });
+
+function normalizeName(v: string) {
+  return v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+/** Cliente informa número da OS + nome e recebe o código de acesso da sua OS. */
+export const findPublicOrder = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) =>
+    z
+      .object({ number: z.number().int().positive().max(1e12), name: z.string().trim().min(2).max(120) })
+      .parse(data),
+  )
+  .handler(async ({ data }): Promise<{ token: string | null }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: order } = await supabaseAdmin
+      .from("service_orders")
+      .select("public_token, customers(name)")
+      .eq("number", data.number)
+      .maybeSingle();
+    const row = order as unknown as { public_token: string; customers: { name: string } | null } | null;
+    if (!row?.customers?.name) return { token: null };
+    const real = normalizeName(row.customers.name).split(" ");
+    const typed = normalizeName(data.name).split(" ");
+    const ok = typed.every((w) => real.includes(w));
+    return { token: ok ? row.public_token : null };
+  });

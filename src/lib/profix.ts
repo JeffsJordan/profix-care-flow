@@ -224,3 +224,47 @@ export const PERIOD_LABEL: Record<string, string> = {
   mes: "Este mês",
   ano: "Este ano",
 };
+
+const UN = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+const DEZ = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+const CEN = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+
+function ate999(n: number): string {
+  if (n === 100) return "cem";
+  const c = Math.floor(n / 100);
+  const r = n % 100;
+  const parts: string[] = [];
+  if (c) parts.push(CEN[c] ?? "");
+  if (r) {
+    if (r < 20) parts.push(UN[r] ?? "");
+    else parts.push([DEZ[Math.floor(r / 10)], UN[r % 10]].filter(Boolean).join(" e "));
+  }
+  return parts.join(" e ");
+}
+
+function inteiroExtenso(n: number): string {
+  if (n === 0) return "zero";
+  const milhoes = Math.floor(n / 1_000_000);
+  const milhares = Math.floor((n % 1_000_000) / 1000);
+  const resto = n % 1000;
+  const parts: string[] = [];
+  if (milhoes) parts.push(milhoes === 1 ? "um milhão" : `${ate999(milhoes)} milhões`);
+  if (milhares) parts.push(milhares === 1 ? "mil" : `${ate999(milhares)} mil`);
+  if (resto) parts.push(ate999(resto));
+  if (parts.length > 1 && resto && (resto < 100 || resto % 100 === 0)) {
+    const last = parts.pop();
+    return `${parts.join(" ")} e ${last}`;
+  }
+  return parts.join(" ");
+}
+
+/** Valor em reais por extenso: 150.5 -> "cento e cinquenta reais e cinquenta centavos". */
+export function moneyInWords(value: number) {
+  const total = Math.round(Math.max(0, value) * 100);
+  const reais = Math.floor(total / 100);
+  const cents = total % 100;
+  const parts: string[] = [];
+  if (reais) parts.push(`${inteiroExtenso(reais)} ${reais === 1 ? "real" : "reais"}`);
+  if (cents) parts.push(`${inteiroExtenso(cents)} ${cents === 1 ? "centavo" : "centavos"}`);
+  return parts.length ? parts.join(" e ") : "zero reais";
+}
