@@ -47,6 +47,9 @@ function Home() {
             <Link to="/auth">
               <Button size="lg">Entrar no sistema</Button>
             </Link>
+            <Link to="/consulta">
+              <Button size="lg" variant="outline">Consultar minha OS</Button>
+            </Link>
           </div>
         </div>
 
