@@ -12,10 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ConsultaRouteImport } from './routes/consulta'
 import { Route as AuthenticatedCaixaRouteImport } from './routes/_authenticated/caixa'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedEstoqueRouteImport } from './routes/_authenticated/estoque'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
+import { Route as AuthenticatedReciboRouteImport } from './routes/_authenticated/recibo'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as OsTokenRouteImport } from './routes/os.$token'
 import { Route as AuthenticatedOrdensIndexRouteImport } from './routes/_authenticated/ordens.index'
@@ -36,6 +38,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConsultaRoute = ConsultaRouteImport.update({
+  id: '/consulta',
+  path: '/consulta',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedCaixaRoute = AuthenticatedCaixaRouteImport.update({
   id: '/caixa',
   path: '/caixa',
@@ -54,6 +61,11 @@ const AuthenticatedEstoqueRoute = AuthenticatedEstoqueRouteImport.update({
 const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
   id: '/painel',
   path: '/painel',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReciboRoute = AuthenticatedReciboRouteImport.update({
+  id: '/recibo',
+  path: '/recibo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
@@ -86,10 +98,12 @@ const AuthenticatedOrdensNovaRoute = AuthenticatedOrdensNovaRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/consulta': typeof ConsultaRoute
   '/caixa': typeof AuthenticatedCaixaRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/estoque': typeof AuthenticatedEstoqueRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/recibo': typeof AuthenticatedReciboRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/os/$token': typeof OsTokenRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
@@ -99,10 +113,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/consulta': typeof ConsultaRoute
   '/caixa': typeof AuthenticatedCaixaRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/estoque': typeof AuthenticatedEstoqueRoute
   '/painel': typeof AuthenticatedPainelRoute
+  '/recibo': typeof AuthenticatedReciboRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/os/$token': typeof OsTokenRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
@@ -114,10 +130,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/consulta': typeof ConsultaRoute
   '/_authenticated/caixa': typeof AuthenticatedCaixaRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/estoque': typeof AuthenticatedEstoqueRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
+  '/_authenticated/recibo': typeof AuthenticatedReciboRoute
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/os/$token': typeof OsTokenRoute
   '/_authenticated/ordens/$id': typeof AuthenticatedOrdensIdRoute
@@ -129,10 +147,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/consulta'
     | '/caixa'
     | '/clientes'
     | '/estoque'
     | '/painel'
+    | '/recibo'
     | '/relatorios'
     | '/os/$token'
     | '/ordens/$id'
@@ -142,10 +162,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/consulta'
     | '/caixa'
     | '/clientes'
     | '/estoque'
     | '/painel'
+    | '/recibo'
     | '/relatorios'
     | '/os/$token'
     | '/ordens/$id'
@@ -156,10 +178,12 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/consulta'
     | '/_authenticated/caixa'
     | '/_authenticated/clientes'
     | '/_authenticated/estoque'
     | '/_authenticated/painel'
+    | '/_authenticated/recibo'
     | '/_authenticated/relatorios'
     | '/os/$token'
     | '/_authenticated/ordens/$id'
@@ -171,6 +195,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ConsultaRoute: typeof ConsultaRoute
   OsTokenRoute: typeof OsTokenRoute
 }
 
@@ -195,6 +220,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consulta': {
+      id: '/consulta'
+      path: '/consulta'
+      fullPath: '/consulta'
+      preLoaderRoute: typeof ConsultaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/caixa': {
@@ -223,6 +255,13 @@ declare module '@tanstack/react-router' {
       path: '/painel'
       fullPath: '/painel'
       preLoaderRoute: typeof AuthenticatedPainelRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recibo': {
+      id: '/_authenticated/recibo'
+      path: '/recibo'
+      fullPath: '/recibo'
+      preLoaderRoute: typeof AuthenticatedReciboRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/relatorios': {
@@ -268,6 +307,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedEstoqueRoute: typeof AuthenticatedEstoqueRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
+  AuthenticatedReciboRoute: typeof AuthenticatedReciboRoute
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedOrdensIdRoute: typeof AuthenticatedOrdensIdRoute
   AuthenticatedOrdensNovaRoute: typeof AuthenticatedOrdensNovaRoute
@@ -279,6 +319,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedEstoqueRoute: AuthenticatedEstoqueRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
+  AuthenticatedReciboRoute: AuthenticatedReciboRoute,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedOrdensIdRoute: AuthenticatedOrdensIdRoute,
   AuthenticatedOrdensNovaRoute: AuthenticatedOrdensNovaRoute,
@@ -292,6 +333,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ConsultaRoute: ConsultaRoute,
   OsTokenRoute: OsTokenRoute,
 }
 export const routeTree = rootRouteImport
