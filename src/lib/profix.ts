@@ -234,9 +234,9 @@ function ate999(n: number): string {
   const c = Math.floor(n / 100);
   const r = n % 100;
   const parts: string[] = [];
-  if (c) parts.push(CEN[c]);
+  if (c) parts.push(CEN[c] ?? "");
   if (r) {
-    if (r < 20) parts.push(UN[r]);
+    if (r < 20) parts.push(UN[r] ?? "");
     else parts.push([DEZ[Math.floor(r / 10)], UN[r % 10]].filter(Boolean).join(" e "));
   }
   return parts.join(" e ");

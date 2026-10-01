@@ -103,6 +103,7 @@ function OrderDetail() {
     `Aparelho: ${deviceLine}\n` +
     `Avaria relatada: ${order.reported_issue || "—"}\n` +
     `Serviço: ${formatMoney(order.service_price)}\n\n` +
+    `Acompanhe sua OS em ${typeof window === "undefined" ? "" : window.location.origin}/consulta informando o número ${order.number} e seu nome.\n\n` +
     `Qualquer dúvida, é só responder por aqui.`;
 
   const statusMessage =
