@@ -93,7 +93,11 @@ function OrderDetail() {
     },
     onSuccess: (status) => {
       setJustChanged(STATUS_LABEL[status] ?? status);
-      toast.success("Status atualizado — envie o aviso no WhatsApp");
+      toast.success(
+        status === "entregue"
+          ? "Entregue — valor lançado no caixa. Envie o aviso no WhatsApp"
+          : "Status atualizado — envie o aviso no WhatsApp",
+      );
       queryClient.invalidateQueries();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao atualizar"),
