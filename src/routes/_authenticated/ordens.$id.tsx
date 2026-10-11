@@ -68,11 +68,36 @@ function OrderDetail() {
         .eq("id", order.id);
       if (error) throw error;
       await supabase.from("order_status_events").insert({ owner_id, order_id: order.id, status });
+
+      // Entrega = pagamento recebido: lança o valor da OS no caixa (uma única vez).
+      if (status === "entregue") {
+        const { data: existing } = await supabase
+          .from("cash_movements")
+          .select("id")
+          .eq("order_id", order.id)
+          .eq("kind", "entrada")
+          .limit(1);
+        if (!existing?.length) {
+          const { error: cashError } = await supabase.from("cash_movements").insert({
+            owner_id,
+            order_id: order.id,
+            kind: "entrada",
+            amount: Number(order.service_price),
+            description: `${orderNumber(order.number)} — ${order.customer?.name ?? "Cliente"}`,
+            category: "Serviço",
+          });
+          if (cashError) throw cashError;
+        }
+      }
       return status;
     },
     onSuccess: (status) => {
       setJustChanged(STATUS_LABEL[status] ?? status);
-      toast.success("Status atualizado — envie o aviso no WhatsApp");
+      toast.success(
+        status === "entregue"
+          ? "Entregue — valor lançado no caixa. Envie o aviso no WhatsApp"
+          : "Status atualizado — envie o aviso no WhatsApp",
+      );
       queryClient.invalidateQueries();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao atualizar"),
