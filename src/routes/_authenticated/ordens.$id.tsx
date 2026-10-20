@@ -133,7 +133,7 @@ function OrderDetail() {
     `Aparelho: ${deviceLine}\n` +
     `Avaria relatada: ${order.reported_issue || "—"}\n` +
     `Serviço: ${formatMoney(order.service_price)}\n\n` +
-    `Acompanhe sua OS em ${typeof window === "undefined" ? "" : window.location.origin}/consulta informando o número ${order.number} e seu nome.\n\n` +
+    `Para aprovar o serviço e acompanhar o status, acesse: ${link}\n\n` +
     `Qualquer dúvida, é só responder por aqui.`;
 
   const statusMessage =
@@ -248,7 +248,11 @@ function OrderDetail() {
         <div className="space-y-6">
           <Card>
             <Field label="Status do serviço">
-              <Select value={order.status} onChange={(e) => changeStatus.mutate(e.target.value)}>
+              <Select
+                value={order.status}
+                disabled={changeStatus.isPending}
+                onChange={(e) => changeStatus.mutate(e.target.value)}
+              >
                 {ORDER_STATUSES.map((s) => (
                   <option key={s} value={s}>
                     {STATUS_LABEL[s]}
@@ -256,6 +260,54 @@ function OrderDetail() {
                 ))}
               </Select>
             </Field>
+
+            {order.status === "aguardando aprovacao" ? (
+              <div className="mt-3">
+                <Button
+                  className="w-full"
+                  disabled={changeStatus.isPending}
+                  onClick={() => changeStatus.mutate("recebido")}
+                >
+                  <Check className="h-4 w-4" /> Aprovar pelo cliente
+                </Button>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Use quando o cliente aprovou presencialmente. Ou envie a OS no WhatsApp para ele
+                  aprovar pelo link.
+                </p>
+              </div>
+            ) : null}
+
+            {order.status === "recebido" ? (
+              <Button
+                className="mt-3 w-full"
+                disabled={changeStatus.isPending}
+                onClick={() => changeStatus.mutate("em andamento")}
+              >
+                <Play className="h-4 w-4" /> Iniciar serviço
+              </Button>
+            ) : null}
+
+            {order.status === "em andamento" ? (
+              <Button
+                className="mt-3 w-full"
+                disabled={changeStatus.isPending}
+                onClick={() => changeStatus.mutate("finalizado")}
+              >
+                <CheckCircle2 className="h-4 w-4" /> Finalizar serviço
+              </Button>
+            ) : null}
+
+            {order.status === "finalizado" ? (
+              <Button
+                variant="outline"
+                className="mt-3 w-full"
+                disabled={changeStatus.isPending}
+                onClick={() => changeStatus.mutate("entregue")}
+              >
+                <PackageCheck className="h-4 w-4" /> Marcar como entregue
+              </Button>
+            ) : null}
+
             {justChanged ? (
               <div className="mt-3 rounded-lg border border-primary/40 bg-primary/10 p-3">
                 <p className="text-xs font-semibold text-primary">
