@@ -1,10 +1,21 @@
 import logo from "@/assets/profix-logo.png.asset.json";
+import logoEscuro from "@/assets/profix-logo-escuro.png.asset.json";
 import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
   return (
     <img
       src={logo.url}
+      alt="ProFix Assistência Técnica"
+      className={cn("h-12 w-auto object-contain", className)}
+    />
+  );
+}
+
+export function LogoHome({ className }: { className?: string }) {
+  return (
+    <img
+      src={logoEscuro.url}
       alt="ProFix Assistência Técnica"
       className={cn("h-12 w-auto object-contain", className)}
     />

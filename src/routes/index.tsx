@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ClipboardList, Package, ShieldCheck, Wallet } from "lucide-react";
-import { Logo } from "@/components/Logo";
+import { LogoHome } from "@/components/Logo";
 import { Button } from "@/components/ui-kit";
 
 export const Route = createFileRoute("/")({
@@ -34,7 +34,7 @@ function Home() {
     <div className="circuit-top min-h-screen bg-background">
       <div className="relative z-10 mx-auto max-w-5xl px-5 py-16">
         <div className="flex flex-col items-center text-center">
-          <Logo className="h-28" />
+          <LogoHome className="h-28" />
           <h1 className="mt-8 max-w-2xl text-3xl font-bold leading-tight lg:text-5xl">
             A sua assistência técnica <span className="text-brand-gradient">organizada</span> de
             ponta a ponta
