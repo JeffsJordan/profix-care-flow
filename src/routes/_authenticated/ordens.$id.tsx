@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Copy, FileText, Printer, Receipt, Send, Tag } from "lucide-react";
+import { ArrowLeft, Check, CheckCircle2, Copy, FileText, PackageCheck, Play, Printer, Receipt, Send, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -69,8 +69,9 @@ function OrderDetail() {
       if (error) throw error;
       await supabase.from("order_status_events").insert({ owner_id, order_id: order.id, status });
 
-      // Entrega = pagamento recebido: lança o valor da OS no caixa (uma única vez).
-      if (status === "entregue") {
+      // OS finalizada (ou entregue) = pagamento recebido: lança o valor no caixa
+      // na data da finalização, uma única vez por OS.
+      if (status === "finalizado" || status === "entregue") {
         const { data: existing } = await supabase
           .from("cash_movements")
           .select("id")
@@ -85,6 +86,10 @@ function OrderDetail() {
             amount: Number(order.service_price),
             description: `${orderNumber(order.number)} — ${order.customer?.name ?? "Cliente"}`,
             category: "Serviço",
+            occurred_at:
+              status === "finalizado"
+                ? new Date().toISOString()
+                : (order.finished_at ?? new Date().toISOString()),
           });
           if (cashError) throw cashError;
         }
@@ -94,8 +99,8 @@ function OrderDetail() {
     onSuccess: (status) => {
       setJustChanged(STATUS_LABEL[status] ?? status);
       toast.success(
-        status === "entregue"
-          ? "Entregue — valor lançado no caixa. Envie o aviso no WhatsApp"
+        status === "finalizado" || status === "entregue"
+          ? "Valor lançado no caixa. Envie o aviso no WhatsApp"
           : "Status atualizado — envie o aviso no WhatsApp",
       );
       queryClient.invalidateQueries();
@@ -128,7 +133,7 @@ function OrderDetail() {
     `Aparelho: ${deviceLine}\n` +
     `Avaria relatada: ${order.reported_issue || "—"}\n` +
     `Serviço: ${formatMoney(order.service_price)}\n\n` +
-    `Acompanhe sua OS em ${typeof window === "undefined" ? "" : window.location.origin}/consulta informando o número ${order.number} e seu nome.\n\n` +
+    `Para aprovar o serviço e acompanhar o status, acesse: ${link}\n\n` +
     `Qualquer dúvida, é só responder por aqui.`;
 
   const statusMessage =
@@ -243,7 +248,11 @@ function OrderDetail() {
         <div className="space-y-6">
           <Card>
             <Field label="Status do serviço">
-              <Select value={order.status} onChange={(e) => changeStatus.mutate(e.target.value)}>
+              <Select
+                value={order.status}
+                disabled={changeStatus.isPending}
+                onChange={(e) => changeStatus.mutate(e.target.value)}
+              >
                 {ORDER_STATUSES.map((s) => (
                   <option key={s} value={s}>
                     {STATUS_LABEL[s]}
@@ -251,6 +260,54 @@ function OrderDetail() {
                 ))}
               </Select>
             </Field>
+
+            {order.status === "aguardando aprovacao" ? (
+              <div className="mt-3">
+                <Button
+                  className="w-full"
+                  disabled={changeStatus.isPending}
+                  onClick={() => changeStatus.mutate("recebido")}
+                >
+                  <Check className="h-4 w-4" /> Aprovar pelo cliente
+                </Button>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Use quando o cliente aprovou presencialmente. Ou envie a OS no WhatsApp para ele
+                  aprovar pelo link.
+                </p>
+              </div>
+            ) : null}
+
+            {order.status === "recebido" ? (
+              <Button
+                className="mt-3 w-full"
+                disabled={changeStatus.isPending}
+                onClick={() => changeStatus.mutate("em andamento")}
+              >
+                <Play className="h-4 w-4" /> Iniciar serviço
+              </Button>
+            ) : null}
+
+            {order.status === "em andamento" ? (
+              <Button
+                className="mt-3 w-full"
+                disabled={changeStatus.isPending}
+                onClick={() => changeStatus.mutate("finalizado")}
+              >
+                <CheckCircle2 className="h-4 w-4" /> Finalizar serviço
+              </Button>
+            ) : null}
+
+            {order.status === "finalizado" ? (
+              <Button
+                variant="outline"
+                className="mt-3 w-full"
+                disabled={changeStatus.isPending}
+                onClick={() => changeStatus.mutate("entregue")}
+              >
+                <PackageCheck className="h-4 w-4" /> Marcar como entregue
+              </Button>
+            ) : null}
+
             {justChanged ? (
               <div className="mt-3 rounded-lg border border-primary/40 bg-primary/10 p-3">
                 <p className="text-xs font-semibold text-primary">
