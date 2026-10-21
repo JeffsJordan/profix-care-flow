@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, CheckCircle2, Copy, FileText, PackageCheck, Play, Printer, Receipt, Send, Tag } from "lucide-react";
+import { ArrowLeft, Check, CheckCircle2, Copy, FileText, PackageCheck, Play, Printer, Receipt, Send, Tag, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -30,8 +30,10 @@ type PrintMode = "os" | "etiqueta" | "cupom" | null;
 function OrderDetail() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [printMode, setPrintMode] = useState<PrintMode>(null);
   const [justChanged, setJustChanged] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data: order, isLoading } = useQuery({ queryKey: ["order", id], queryFn: () => fetchOrder(id) });
   const { data: usedParts = [] } = useQuery({ queryKey: ["order-parts", id], queryFn: () => fetchOrderParts(id) });
@@ -106,6 +108,24 @@ function OrderDetail() {
       queryClient.invalidateQueries();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao atualizar"),
+  });
+
+  const deleteOrder = useMutation({
+    mutationFn: async () => {
+      if (!order) throw new Error("OS não carregada");
+      for (const table of ["cash_movements", "service_order_parts", "order_status_events"] as const) {
+        const { error } = await supabase.from(table).delete().eq("order_id", order.id);
+        if (error) throw error;
+      }
+      const { error } = await supabase.from("service_orders").delete().eq("id", order.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("OS excluída — os lançamentos dela no caixa também foram removidos.");
+      queryClient.invalidateQueries();
+      navigate({ to: "/ordens" });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao excluir"),
   });
 
   if (isLoading) {
@@ -365,6 +385,38 @@ function OrderDetail() {
                 Na janela de impressão escolha “Salvar como PDF” para gerar o arquivo.
               </p>
             </div>
+          </Card>
+
+          <Card>
+            <h2 className="mb-3 text-lg font-semibold text-destructive">Excluir OS</h2>
+            {!confirmDelete ? (
+              <Button variant="outline" className="w-full" onClick={() => setConfirmDelete(true)}>
+                <Trash2 className="h-4 w-4" /> Excluir esta OS
+              </Button>
+            ) : (
+              <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
+                <p className="text-xs text-destructive">
+                  A OS será apagada junto com as peças, o histórico e os lançamentos dela no caixa.
+                  Essa ação não pode ser desfeita.
+                </p>
+                <Button
+                  variant="danger"
+                  className="w-full"
+                  disabled={deleteOrder.isPending}
+                  onClick={() => deleteOrder.mutate()}
+                >
+                  {deleteOrder.isPending ? "Excluindo..." : "Confirmar exclusão"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full"
+                  disabled={deleteOrder.isPending}
+                  onClick={() => setConfirmDelete(false)}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            )}
           </Card>
         </div>
       </div>
