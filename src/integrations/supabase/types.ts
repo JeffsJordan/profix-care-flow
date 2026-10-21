@@ -183,7 +183,9 @@ export type Database = {
           owner_id: string
           part_id: string | null
           quantity: number
+          stocked_out_at: string | null
           unit_cost: number
+          unit_price: number
         }
         Insert: {
           created_at?: string
@@ -193,7 +195,9 @@ export type Database = {
           owner_id: string
           part_id?: string | null
           quantity?: number
+          stocked_out_at?: string | null
           unit_cost?: number
+          unit_price?: number
         }
         Update: {
           created_at?: string
@@ -203,7 +207,9 @@ export type Database = {
           owner_id?: string
           part_id?: string | null
           quantity?: number
+          stocked_out_at?: string | null
           unit_cost?: number
+          unit_price?: number
         }
         Relationships: [
           {
