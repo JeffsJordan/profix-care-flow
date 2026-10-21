@@ -32,7 +32,7 @@ function Caixa() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ kind: "entrada", amount: "", description: "", category: "" });
   const [periodType, setPeriodType] = useState<PeriodType>("tudo");
-  const [day, setDay] = useState("");
+  const [dayFilter, setDayFilter] = useState("");
   const [weekRef, setWeekRef] = useState("");
   const [monthFilter, setMonthFilter] = useState(() => new Date().toISOString().slice(0, 7));
   const [year, setYear] = useState(() => String(new Date().getFullYear()));
@@ -47,8 +47,8 @@ function Caixa() {
     () =>
       movements.filter((m) => {
         const d = new Date(m.occurred_at);
-        if (periodType === "dia" && day) {
-          const [y, mo, da] = day.split("-").map(Number);
+        if (periodType === "dia" && dayFilter) {
+          const [y = 0, mo = 0, da = 0] = dayFilter.split("-").map(Number);
           return d.getFullYear() === y && d.getMonth() + 1 === mo && d.getDate() === da;
         }
         if (periodType === "semana" && weekRef) {
@@ -58,13 +58,13 @@ function Caixa() {
           return only >= range[0] && only <= range[1];
         }
         if (periodType === "mes" && monthFilter) {
-          const [y, mo] = monthFilter.split("-").map(Number);
+          const [y = 0, mo = 0] = monthFilter.split("-").map(Number);
           return d.getFullYear() === y && d.getMonth() + 1 === mo;
         }
         if (periodType === "ano" && year) return d.getFullYear() === Number(year);
         return true;
       }),
-    [movements, periodType, day, weekRef, monthFilter, year],
+    [movements, periodType, dayFilter, weekRef, monthFilter, year],
   );
 
   const filteredIn = useMemo(() => filtered.filter((m) => m.kind === "entrada").reduce((s, m) => s + Number(m.amount), 0), [filtered]);
@@ -72,18 +72,18 @@ function Caixa() {
 
   const periodLabel = useMemo(() => {
     if (periodType === "tudo") return "todo o período";
-    if (periodType === "dia") return day ? `dia ${new Date(`${day}T12:00:00`).toLocaleDateString("pt-BR")}` : "escolha o dia";
+    if (periodType === "dia") return dayFilter ? `dia ${new Date(`${dayFilter}T12:00:00`).toLocaleDateString("pt-BR")}` : "escolha o dia";
     if (periodType === "semana") {
       const range = weekRange(weekRef);
       return range ? `semana de ${range[0].toLocaleDateString("pt-BR")} a ${range[1].toLocaleDateString("pt-BR")}` : "escolha um dia da semana";
     }
     if (periodType === "mes") {
       if (!monthFilter) return "escolha o mês";
-      const [y, mo] = monthFilter.split("-").map(Number);
+      const [y = 0, mo = 0] = monthFilter.split("-").map(Number);
       return new Date(y, mo - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
     }
     return year ? `ano de ${year}` : "escolha o ano";
-  }, [periodType, day, weekRef, monthFilter, year]);
+  }, [periodType, dayFilter, weekRef, monthFilter, year]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -150,7 +150,7 @@ function Caixa() {
           </Field>
           {periodType === "dia" ? (
             <Field label="Dia">
-              <Input type="date" value={day} onChange={(e) => setDay(e.target.value)} />
+              <Input type="date" value={dayFilter} onChange={(e) => setDayFilter(e.target.value)} />
             </Field>
           ) : null}
           {periodType === "semana" ? (
