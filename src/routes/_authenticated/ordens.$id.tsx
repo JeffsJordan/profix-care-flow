@@ -1,13 +1,21 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, CheckCircle2, Copy, FileText, PackageCheck, Play, Printer, Receipt, Send, Tag, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, CheckCircle2, Copy, FileText, PackageCheck, Play, Plus, Printer, Receipt, Send, Tag, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { PatternLock } from "@/components/PatternLock";
-import { Badge, Button, Card, Field, Select, statusTone } from "@/components/ui-kit";
+import { Badge, Button, Card, Field, Input, Select, statusTone } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchOrder, fetchOrderParts, fetchStatusEvents, signedPhotoUrls } from "@/lib/data";
+import {
+  currentUserId,
+  fetchOrder,
+  fetchOrderParts,
+  fetchParts,
+  fetchStatusEvents,
+  partsTotal,
+  signedPhotoUrls,
+} from "@/lib/data";
 import {
   ORDER_STATUSES,
   QUOTE_LABEL,
@@ -34,9 +42,12 @@ function OrderDetail() {
   const [printMode, setPrintMode] = useState<PrintMode>(null);
   const [justChanged, setJustChanged] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pickPart, setPickPart] = useState("");
+  const [pickQty, setPickQty] = useState("1");
 
   const { data: order, isLoading } = useQuery({ queryKey: ["order", id], queryFn: () => fetchOrder(id) });
   const { data: usedParts = [] } = useQuery({ queryKey: ["order-parts", id], queryFn: () => fetchOrderParts(id) });
+  const { data: stockParts = [] } = useQuery({ queryKey: ["parts"], queryFn: fetchParts });
   const { data: events = [] } = useQuery({ queryKey: ["order-events", id], queryFn: () => fetchStatusEvents(id) });
   const { data: photoUrls = [] } = useQuery({
     queryKey: ["order-photos", id, order?.photos],
@@ -74,6 +85,9 @@ function OrderDetail() {
       // OS finalizada (ou entregue) = pagamento recebido: lança o valor no caixa
       // na data da finalização, uma única vez por OS.
       if (status === "finalizado" || status === "entregue") {
+        const when =
+          status === "finalizado" ? new Date().toISOString() : (order.finished_at ?? new Date().toISOString());
+        const rows = await fetchOrderParts(order.id);
         const { data: existing } = await supabase
           .from("cash_movements")
           .select("id")
@@ -85,15 +99,33 @@ function OrderDetail() {
             owner_id,
             order_id: order.id,
             kind: "entrada",
-            amount: Number(order.service_price),
+            amount: Number(order.service_price) + partsTotal(rows),
             description: `${orderNumber(order.number)} — ${order.customer?.name ?? "Cliente"}`,
             category: "Serviço",
-            occurred_at:
-              status === "finalizado"
-                ? new Date().toISOString()
-                : (order.finished_at ?? new Date().toISOString()),
+            occurred_at: when,
           });
           if (cashError) throw cashError;
+        }
+        // Baixa das peças: saída no caixa + desconto no estoque, uma vez por peça.
+        const current = await fetchParts();
+        for (const r of rows) {
+          if (r.stocked_out_at) continue;
+          const { error: outErr } = await supabase.from("cash_movements").insert({
+            owner_id,
+            order_id: order.id,
+            kind: "saida",
+            amount: Number(r.unit_price) * r.quantity,
+            description: `Peça — ${orderNumber(order.number)} — ${r.quantity}x ${r.name}`,
+            category: "Peças",
+            occurred_at: when,
+          });
+          if (outErr) throw outErr;
+          const p = current.find((x) => x.id === r.part_id);
+          if (p) {
+            await supabase.from("parts").update({ quantity: Math.max(0, p.quantity - r.quantity) }).eq("id", p.id);
+            p.quantity = Math.max(0, p.quantity - r.quantity);
+          }
+          await supabase.from("service_order_parts").update({ stocked_out_at: when }).eq("id", r.id);
         }
       }
       return status;
@@ -110,9 +142,60 @@ function OrderDetail() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao atualizar"),
   });
 
+  const addPart = useMutation({
+    mutationFn: async () => {
+      const owner_id = await currentUserId();
+      const part = stockParts.find((p) => p.id === pickPart);
+      if (!owner_id || !order || !part) throw new Error("Selecione uma peça");
+      const quantity = Math.max(1, Number(pickQty) || 1);
+      const { error } = await supabase.from("service_order_parts").insert({
+        owner_id,
+        order_id: order.id,
+        part_id: part.id,
+        name: part.name,
+        quantity,
+        unit_cost: Number(part.cost_price),
+        unit_price: Number(part.sale_price),
+      });
+      if (error) throw error;
+      await syncPartsCost();
+    },
+    onSuccess: () => {
+      toast.success("Peça adicionada à OS");
+      setPickPart("");
+      setPickQty("1");
+      queryClient.invalidateQueries();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao adicionar"),
+  });
+
+  const removePart = useMutation({
+    mutationFn: async (partRowId: string) => {
+      const { error } = await supabase.from("service_order_parts").delete().eq("id", partRowId);
+      if (error) throw error;
+      await syncPartsCost();
+    },
+    onSuccess: () => queryClient.invalidateQueries(),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao remover"),
+  });
+
+  async function syncPartsCost() {
+    const rows = await fetchOrderParts(id);
+    const cost = rows.reduce((s, p) => s + Number(p.unit_cost) * p.quantity, 0);
+    await supabase.from("service_orders").update({ parts_cost: cost }).eq("id", id);
+  }
+
   const deleteOrder = useMutation({
     mutationFn: async () => {
       if (!order) throw new Error("OS não carregada");
+      // Devolve ao estoque as peças que já tinham sido baixadas.
+      const rows = await fetchOrderParts(order.id);
+      const current = await fetchParts();
+      for (const r of rows) {
+        if (!r.stocked_out_at || !r.part_id) continue;
+        const p = current.find((x) => x.id === r.part_id);
+        if (p) await supabase.from("parts").update({ quantity: p.quantity + r.quantity }).eq("id", p.id);
+      }
       for (const table of ["cash_movements", "service_order_parts", "order_status_events"] as const) {
         const { error } = await supabase.from(table).delete().eq("order_id", order.id);
         if (error) throw error;
@@ -121,7 +204,7 @@ function OrderDetail() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("OS excluída — os lançamentos dela no caixa também foram removidos.");
+      toast.success("OS excluída — caixa ajustado e peças devolvidas ao estoque.");
       queryClient.invalidateQueries();
       navigate({ to: "/ordens" });
     },
@@ -146,13 +229,16 @@ function OrderDetail() {
 
   const link = publicOrderUrl(order.public_token);
   const deviceLine = [order.device_type, order.brand, order.model].filter(Boolean).join(" ");
+  const partsSum = partsTotal(usedParts);
+  const total = Number(order.service_price) + partsSum;
+  const locked = order.status === "finalizado" || order.status === "entregue";
 
   const osMessage =
     `*ProFix Assistência Técnica*\n` +
     `Olá, ${order.customer?.name ?? ""}! Sua ordem de serviço ${orderNumber(order.number)} foi registrada.\n\n` +
     `Aparelho: ${deviceLine}\n` +
     `Avaria relatada: ${order.reported_issue || "—"}\n` +
-    `Serviço: ${formatMoney(order.service_price)}\n\n` +
+    `Valor total: ${formatMoney(total)}\n\n` +
     `Para aprovar o serviço e acompanhar o status, acesse: ${link}\n\n` +
     `Qualquer dúvida, é só responder por aqui.`;
 
@@ -229,26 +315,63 @@ function OrderDetail() {
           </Card>
 
           <Card>
-            <h2 className="mb-3 text-lg font-semibold">Valores</h2>
-            <div className="space-y-1 text-sm">
-              <Row label="Valor do serviço" value={formatMoney(order.service_price)} />
-              <Row label="Investido em peças" value={formatMoney(order.parts_cost)} />
-              <Row
-                label="Lucro líquido do serviço"
-                value={formatMoney(Number(order.service_price) - Number(order.parts_cost))}
-                strong
-              />
-            </div>
-            {usedParts.length ? (
-              <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <p className="text-xs uppercase tracking-wide">Peças usadas</p>
-                {usedParts.map((p) => (
-                  <p key={p.id}>
-                    {p.quantity}x {p.name} · {formatMoney(p.unit_cost * p.quantity)}
-                  </p>
-                ))}
+            <h2 className="mb-1 text-lg font-semibold">Peças utilizadas</h2>
+            <p className="mb-3 text-xs text-muted-foreground">
+              Só você vê esta parte. O cliente vê apenas o valor total.
+            </p>
+            {!locked ? (
+              <div className="mb-3 flex flex-wrap items-end gap-2">
+                <div className="min-w-[200px] flex-1">
+                  <Field label="Peça do estoque">
+                    <Select value={pickPart} onChange={(e) => setPickPart(e.target.value)}>
+                      <option value="">Selecione...</option>
+                      {stockParts.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} · {formatMoney(p.sale_price)} · {p.quantity} em estoque
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                </div>
+                <div className="w-20">
+                  <Field label="Qtd.">
+                    <Input type="number" min={1} value={pickQty} onChange={(e) => setPickQty(e.target.value)} />
+                  </Field>
+                </div>
+                <Button disabled={!pickPart || addPart.isPending} onClick={() => addPart.mutate()}>
+                  <Plus className="h-4 w-4" /> Adicionar
+                </Button>
               </div>
-            ) : null}
+            ) : (
+              <p className="mb-3 text-xs text-muted-foreground">
+                OS finalizada: as peças já foram baixadas do estoque.
+              </p>
+            )}
+            <div className="space-y-1 text-sm">
+              {usedParts.map((p) => (
+                <div key={p.id} className="flex items-center justify-between gap-2 border-b border-border pb-1">
+                  <span>
+                    {p.quantity}x {p.name}
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      venda {formatMoney(Number(p.unit_price) * p.quantity)} · custo{" "}
+                      {formatMoney(Number(p.unit_cost) * p.quantity)}
+                      {p.stocked_out_at ? ` · baixada em ${formatDate(p.stocked_out_at)}` : ""}
+                    </span>
+                  </span>
+                  {!locked && !p.stocked_out_at ? (
+                    <Button variant="ghost" size="icon" onClick={() => removePart.mutate(p.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  ) : null}
+                </div>
+              ))}
+              {usedParts.length === 0 ? <p className="text-muted-foreground">Nenhuma peça adicionada.</p> : null}
+            </div>
+            <div className="mt-4 space-y-1 text-sm">
+              <Row label="Valor do serviço" value={formatMoney(order.service_price)} />
+              <Row label="Peças" value={formatMoney(partsSum)} />
+              <Row label="Total cobrado do cliente" value={formatMoney(total)} strong />
+            </div>
           </Card>
 
           <Card>
