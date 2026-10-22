@@ -568,7 +568,7 @@ function OrderDetail() {
                 <strong>Checklist:</strong> {order.checklist?.join(", ") || "—"}
               </p>
               <p>
-                <strong>Valor do serviço:</strong> {formatMoney(order.service_price)}
+                <strong>Valor total:</strong> {formatMoney(total)}
               </p>
               <p className="mt-6">Acompanhe pelo link: {link}</p>
               <p className="mt-10">___________________________________</p>
@@ -599,7 +599,7 @@ function OrderDetail() {
               <p>Aparelho: {deviceLine}</p>
               <p>Avaria: {order.reported_issue}</p>
               <p>--------------------------------</p>
-              <p>Serviço: {formatMoney(order.service_price)}</p>
+              <p>Total: {formatMoney(total)}</p>
               <p>Status: {STATUS_LABEL[order.status]}</p>
               <p>--------------------------------</p>
               <p className="break-all">{link}</p>
