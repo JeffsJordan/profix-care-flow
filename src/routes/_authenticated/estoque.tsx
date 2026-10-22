@@ -22,6 +22,25 @@ function Estoque() {
   const [form, setForm] = useState(EMPTY);
 
   const { data: parts = [], isLoading } = useQuery({ queryKey: ["parts"], queryFn: fetchParts });
+  const { data: stockOuts = [] } = useQuery({
+    queryKey: ["stock-outs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("service_order_parts")
+        .select("id, part_id, quantity, stocked_out_at, order:service_orders(number)")
+        .not("stocked_out_at", "is", null)
+        .order("stocked_out_at", { ascending: false })
+        .limit(300);
+      if (error) throw error;
+      return (data ?? []) as unknown as {
+        id: string;
+        part_id: string | null;
+        quantity: number;
+        stocked_out_at: string;
+        order: { number: number } | null;
+      }[];
+    },
+  });
 
   const save = useMutation({
     mutationFn: async () => {
@@ -152,6 +171,20 @@ function Estoque() {
             <p className="mt-3 text-xs text-muted-foreground">
               Custo {formatMoney(p.cost_price)} · Venda {formatMoney(p.sale_price)}
             </p>
+            {stockOuts.filter((s) => s.part_id === p.id).length ? (
+              <div className="mt-2 border-t border-border pt-2 text-xs text-muted-foreground">
+                <p className="mb-1 font-semibold">Baixas por OS</p>
+                {stockOuts
+                  .filter((s) => s.part_id === p.id)
+                  .slice(0, 5)
+                  .map((s) => (
+                    <p key={s.id}>
+                      {new Date(s.stocked_out_at).toLocaleDateString("pt-BR")} · OS-{s.order?.number ?? "?"} ·{" "}
+                      {s.quantity} un.
+                    </p>
+                  ))}
+              </div>
+            ) : null}
           </Card>
         ))}
       </div>

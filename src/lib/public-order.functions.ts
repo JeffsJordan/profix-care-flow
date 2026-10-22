@@ -38,6 +38,13 @@ export const getPublicOrder = createServerFn({ method: "GET" })
       .eq("order_id", (order as { id: string }).id)
       .order("created_at", { ascending: true });
 
+    // Peças ficam restritas: o cliente vê apenas o valor total (serviço + peças).
+    const { data: partRows } = await supabaseAdmin
+      .from("service_order_parts")
+      .select("quantity, unit_price")
+      .eq("order_id", (order as { id: string }).id);
+    const partsSum = (partRows ?? []).reduce((s, p) => s + Number(p.unit_price) * Number(p.quantity), 0);
+
     const row = order as unknown as PublicOrder & { customers: { name: string } | null };
     return {
       number: row.number,
@@ -47,7 +54,7 @@ export const getPublicOrder = createServerFn({ method: "GET" })
       reported_issue: row.reported_issue,
       diagnosis: row.diagnosis,
       checklist: row.checklist ?? [],
-      service_price: Number(row.service_price),
+      service_price: Number(row.service_price) + partsSum,
       status: row.status,
       quote_status: row.quote_status,
       created_at: row.created_at,
