@@ -7,7 +7,7 @@ import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button, Card, Field, Input, Select } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
-import type { OrderWithCustomer } from "@/lib/data";
+import { fetchOrderParts, partsTotal, type OrderWithCustomer } from "@/lib/data";
 import { formatMoney, moneyInWords, onlyDigits, orderNumber, whatsappLink } from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/recibo")({
@@ -34,7 +34,9 @@ function ReciboPage() {
         .maybeSingle();
       if (error) throw error;
       if (!data) throw new Error("OS não encontrada");
-      return data as unknown as OrderWithCustomer;
+      const parts = await fetchOrderParts(data.id);
+      const o = data as unknown as OrderWithCustomer;
+      return { ...o, service_price: Number(o.service_price) + partsTotal(parts) };
     },
     onSuccess: setOrder,
     onError: (e) => {
