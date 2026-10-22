@@ -99,7 +99,22 @@ export async function fetchOrderParts(orderId: string) {
     .select("*")
     .eq("order_id", orderId);
   if (error) throw error;
-  return (data ?? []) as { id: string; name: string; quantity: number; unit_cost: number; part_id: string | null }[];
+  return (data ?? []) as OrderPart[];
+}
+
+export type OrderPart = {
+  id: string;
+  name: string;
+  quantity: number;
+  unit_cost: number;
+  unit_price: number;
+  part_id: string | null;
+  stocked_out_at: string | null;
+  created_at: string;
+};
+
+export function partsTotal(parts: { quantity: number; unit_price: number }[]) {
+  return parts.reduce((s, p) => s + Number(p.unit_price) * p.quantity, 0);
 }
 
 export async function fetchStatusEvents(orderId: string) {
