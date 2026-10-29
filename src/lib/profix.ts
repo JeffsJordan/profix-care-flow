@@ -5,10 +5,33 @@ export const DEVICE_TYPES = [
   "Console",
   "Placa de vídeo",
   "Placa-mãe",
+  "Impressora",
 ] as const;
 
 /** Checklist físico específico por tipo de aparelho. */
 export const CHECKLIST_BY_DEVICE: Record<string, string[]> = {
+  Impressora: [
+    "Não liga",
+    "Não imprime",
+    "Papel atolando",
+    "Não puxa papel",
+    "Puxa várias folhas",
+    "Impressão com falhas ou linhas",
+    "Impressão borrada ou manchada",
+    "Cores incorretas ou ausentes",
+    "Cartucho ou toner não reconhecido",
+    "Vazamento de tinta ou toner",
+    "Cabeçote entupido",
+    "Carro de impressão travado",
+    "Ruído anormal",
+    "Falha na conexão USB",
+    "Falha na conexão Wi-Fi ou rede",
+    "Scanner não funciona",
+    "Alimentador de documentos com falha",
+    "Impressão frente e verso com falha",
+    "Erro no painel",
+    "Carcaça ou bandeja danificada",
+  ],
   Celular: [
     "Tela trincada",
     "Tela com manchas",
@@ -123,6 +146,21 @@ export const CHECKLIST_ITEMS = [
 export function checklistFor(deviceType: string | null | undefined) {
   if (!deviceType) return CHECKLIST_ITEMS;
   return CHECKLIST_BY_DEVICE[deviceType] ?? CHECKLIST_ITEMS;
+}
+
+/** Acessórios recebidos, não peças utilizadas no reparo. */
+export const ACCESSORIES_BY_DEVICE: Record<string, string[]> = {
+  Celular: ["Carregador", "Cabo USB", "Capa", "Película", "Chip SIM", "Cartão de memória", "Fone de ouvido", "Caixa original"],
+  Notebook: ["Carregador / fonte", "Cabo de energia", "Mouse", "Bolsa / mochila", "Adaptador", "HD / SSD externo", "Pen drive", "Caixa original"],
+  Computador: ["Cabo de energia", "Monitor", "Cabo HDMI / DisplayPort / VGA", "Teclado", "Mouse", "Adaptador Wi-Fi", "Caixas de som", "HD / SSD externo", "Pen drive"],
+  Console: ["Fonte / cabo de energia", "Cabo HDMI", "Controle", "Cabo de carga do controle", "Jogo / mídia física", "Headset", "Base / suporte", "HD externo", "Caixa original"],
+  "Placa de vídeo": ["Adaptador de energia", "Cabo de energia PCIe", "Cabo HDMI / DisplayPort", "Suporte da placa", "Parafusos", "Caixa original", "Embalagem antiestática"],
+  "Placa-mãe": ["Espelho traseiro", "Cabos SATA", "Antenas Wi-Fi", "Processador", "Cooler", "Memória RAM", "SSD M.2", "Parafusos / espaçadores", "Caixa original", "Embalagem antiestática"],
+  Impressora: ["Fonte / cabo de energia", "Cabo USB", "Cabo de rede", "Cartucho preto", "Cartucho colorido", "Toner", "Frascos de tinta", "Bandeja de papel", "Cabo telefônico", "Caixa original"],
+};
+
+export function accessoriesFor(deviceType: string | null | undefined) {
+  return deviceType ? ACCESSORIES_BY_DEVICE[deviceType] ?? [] : [];
 }
 
 export const ORDER_STATUSES = [

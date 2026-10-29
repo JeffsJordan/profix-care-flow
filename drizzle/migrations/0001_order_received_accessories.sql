@@ -1,0 +1,1 @@
+ALTER TABLE public.service_orders ADD COLUMN IF NOT EXISTS accessories text[] NOT NULL DEFAULT '{}'::text[]; COMMENT ON COLUMN public.service_orders.accessories IS 'Acessórios entregues pelo cliente na entrada do equipamento, separados do checklist de defeitos.';

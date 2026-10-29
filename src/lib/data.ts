@@ -22,6 +22,7 @@ export type ServiceOrder = {
   reported_issue: string;
   diagnosis: string | null;
   checklist: string[];
+  accessories: string[];
   photos: string[];
   password_type: string;
   password_value: string | null;

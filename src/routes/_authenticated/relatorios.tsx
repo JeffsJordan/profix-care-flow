@@ -21,6 +21,14 @@ import { summarize, type Period } from "@/lib/metrics";
 import { PERIOD_LABEL, formatMoney } from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
+  head: () => ({ meta: [
+    { title: "Relatórios — ProFix" },
+    { name: "description", content: "Consulte faturamento e resultados financeiros da ProFix por período." },
+    { property: "og:title", content: "Relatórios — ProFix" },
+    { property: "og:description", content: "Consulte faturamento e resultados financeiros da ProFix por período." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Relatorios,
 });
 

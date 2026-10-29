@@ -10,6 +10,14 @@ import { fetchCustomers, fetchOrders, type Customer } from "@/lib/data";
 import { formatDate, formatMoney } from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/clientes")({
+  head: () => ({ meta: [
+    { title: "Clientes — ProFix" },
+    { name: "description", content: "Consulte os clientes e o histórico de atendimentos da ProFix." },
+    { property: "og:title", content: "Clientes — ProFix" },
+    { property: "og:description", content: "Consulte os clientes e o histórico de atendimentos da ProFix." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Clientes,
 });
 

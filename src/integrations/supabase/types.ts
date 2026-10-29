@@ -230,6 +230,7 @@ export type Database = {
       }
       service_orders: {
         Row: {
+          accessories: string[]
           brand: string | null
           checklist: string[]
           created_at: string
@@ -256,6 +257,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accessories?: string[]
           brand?: string | null
           checklist?: string[]
           created_at?: string
@@ -282,6 +284,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accessories?: string[]
           brand?: string | null
           checklist?: string[]
           created_at?: string

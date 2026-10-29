@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { PatternLock } from "@/components/PatternLock";
+import { ReceivedAccessories } from "@/components/ReceivedAccessories";
 import { Badge, Button, Card, Field, Input, Select, statusTone } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -30,6 +31,14 @@ import {
 } from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/ordens/$id")({
+  head: () => ({ meta: [
+    { title: "Ficha da ordem de serviço — ProFix" },
+    { name: "description", content: "Consulte o aparelho, acessórios recebidos e andamento da ordem de serviço na ProFix." },
+    { property: "og:title", content: "Ficha da ordem de serviço — ProFix" },
+    { property: "og:description", content: "Consulte o aparelho, acessórios recebidos e andamento da ordem de serviço na ProFix." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: OrderDetail,
 });
 
@@ -63,6 +72,18 @@ function OrderDetail() {
     }, 250);
     return () => clearTimeout(timer);
   }, [printMode]);
+
+  const updateAccessories = useMutation({
+    mutationFn: async (accessories: string[]) => {
+      const { error } = await supabase.from("service_orders").update({ accessories }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["order", id] });
+      toast.success("Acessórios atualizados");
+    },
+    onError: () => toast.error("Não foi possível salvar os acessórios"),
+  });
 
   const changeStatus = useMutation({
     mutationFn: async (status: string) => {
@@ -288,6 +309,15 @@ function OrderDetail() {
                 </div>
               </div>
             ) : null}
+
+            <div className="mt-5 border-t border-border pt-5">
+              <ReceivedAccessories
+                deviceType={order.device_type}
+                value={order.accessories ?? []}
+                onChange={(value) => updateAccessories.mutate(value)}
+                disabled={updateAccessories.isPending}
+              />
+            </div>
 
             <div className="mt-5">
               <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Senha do aparelho</p>
@@ -568,6 +598,9 @@ function OrderDetail() {
                 <strong>Checklist:</strong> {order.checklist?.join(", ") || "—"}
               </p>
               <p>
+                <strong>Acessórios entregues pelo cliente:</strong> {order.accessories?.join(", ") || "Nenhum acessório informado"}
+              </p>
+              <p>
                 <strong>Valor total:</strong> {formatMoney(total)}
               </p>
               <p className="mt-6">Acompanhe pelo link: {link}</p>
@@ -598,6 +631,7 @@ function OrderDetail() {
               <p>Tel: {order.customer?.phone}</p>
               <p>Aparelho: {deviceLine}</p>
               <p>Avaria: {order.reported_issue}</p>
+              <p>Acessórios: {order.accessories?.join(", ") || "Nenhum"}</p>
               <p>--------------------------------</p>
               <p>Total: {formatMoney(total)}</p>
               <p>Status: {STATUS_LABEL[order.status]}</p>

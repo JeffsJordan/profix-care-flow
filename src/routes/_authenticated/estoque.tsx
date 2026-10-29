@@ -10,6 +10,14 @@ import { fetchParts, type Part } from "@/lib/data";
 import { formatMoney } from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/estoque")({
+  head: () => ({ meta: [
+    { title: "Estoque de peças — ProFix" },
+    { name: "description", content: "Controle as peças disponíveis e as baixas de estoque da ProFix." },
+    { property: "og:title", content: "Estoque de peças — ProFix" },
+    { property: "og:description", content: "Controle as peças disponíveis e as baixas de estoque da ProFix." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Estoque,
 });
 

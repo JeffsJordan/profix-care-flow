@@ -11,7 +11,14 @@ import { fetchOrderParts, partsTotal, type OrderWithCustomer } from "@/lib/data"
 import { formatMoney, moneyInWords, onlyDigits, orderNumber, whatsappLink } from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/recibo")({
-  head: () => ({ meta: [{ title: "Recibo de pagamento — ProFix" }] }),
+  head: () => ({ meta: [
+    { title: "Recibo de pagamento — ProFix" },
+    { name: "description", content: "Consulte e imprima o recibo de pagamento de uma ordem de serviço da ProFix." },
+    { property: "og:title", content: "Recibo de pagamento — ProFix" },
+    { property: "og:description", content: "Consulte e imprima o recibo de pagamento de uma ordem de serviço da ProFix." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: ReciboPage,
 });
 

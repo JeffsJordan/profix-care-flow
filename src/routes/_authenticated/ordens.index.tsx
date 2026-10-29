@@ -16,6 +16,14 @@ import {
 } from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/ordens/")({
+  head: () => ({ meta: [
+    { title: "Ordens de serviço — ProFix" },
+    { name: "description", content: "Consulte as ordens de serviço e acompanhe os atendimentos da ProFix." },
+    { property: "og:title", content: "Ordens de serviço — ProFix" },
+    { property: "og:description", content: "Consulte as ordens de serviço e acompanhe os atendimentos da ProFix." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Ordens,
 });
 
