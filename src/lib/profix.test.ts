@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import { ACCESSORIES_BY_DEVICE, DEVICE_TYPES, accessoriesFor, checklistFor } from "./profix";
 
