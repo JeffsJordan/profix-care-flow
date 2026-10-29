@@ -25,7 +25,6 @@ function Consulta() {
   const navigate = useNavigate();
   const find = useServerFn(findPublicOrder);
   const [number, setNumber] = useState("");
-  const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -33,14 +32,14 @@ function Consulta() {
     e.preventDefault();
     setError("");
     const n = Number(onlyDigits(number));
-    if (!n || name.trim().length < 2) {
-      setError("Informe o número da OS e seu nome.");
+    if (!n) {
+      setError("Informe o número da OS.");
       return;
     }
     setLoading(true);
     try {
-      const { token } = await find({ data: { number: n, name } });
-      if (!token) setError("Não encontramos uma OS com esse número e nome. Confira os dados.");
+      const { token } = await find({ data: { number: n } });
+      if (!token) setError("Não encontramos uma OS com esse número. Confira os dados.");
       else navigate({ to: "/os/$token", params: { token } });
     } catch {
       setError("Não foi possível consultar agora. Tente novamente.");
@@ -58,14 +57,11 @@ function Consulta() {
         <Card>
           <h1 className="text-xl font-bold">Consultar minha ordem de serviço</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Digite o número da OS que você recebeu e o seu nome.
+            Digite o número da OS que você recebeu para acompanhar o serviço.
           </p>
           <form onSubmit={submit} className="mt-5 space-y-4">
             <Field label="Número da OS">
               <Input placeholder="Ex.: 1023 ou OS-01023" value={number} onChange={(e) => setNumber(e.target.value)} />
-            </Field>
-            <Field label="Seu nome">
-              <Input placeholder="Nome usado no cadastro" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
             <Button type="submit" className="w-full" disabled={loading}>
