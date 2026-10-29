@@ -248,7 +248,7 @@ function OrderDetail() {
     );
   }
 
-  const link = publicOrderUrl(order.public_token);
+  const link = publicOrderUrl();
   const deviceLine = [order.device_type, order.brand, order.model].filter(Boolean).join(" ");
   const partsSum = partsTotal(usedParts);
   const total = Number(order.service_price) + partsSum;

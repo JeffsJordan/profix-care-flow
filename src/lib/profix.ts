@@ -236,9 +236,10 @@ export function whatsappLink(phone: string, message: string) {
   return `https://wa.me/${withCountry}?text=${encodeURIComponent(message)}`;
 }
 
-export function publicOrderUrl(token: string) {
+/** Link público enviado ao cliente: cai na consulta por número da OS. */
+export function publicOrderUrl() {
   const origin = typeof window === "undefined" ? "" : window.location.origin;
-  return `${origin}/os/${token}`;
+  return `${origin}/consulta`;
 }
 
 /** Início do período (dia/semana/mês/ano) em horário local. */
