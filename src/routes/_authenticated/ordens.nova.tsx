@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { PatternLock } from "@/components/PatternLock";
+import { ReceivedAccessories } from "@/components/ReceivedAccessories";
 import { Badge, Button, Card, Field, Input, Select, Textarea } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCustomers, fetchParts, type Part } from "@/lib/data";
@@ -12,6 +13,14 @@ import { DEVICE_TYPES, checklistFor, formatMoney, orderNumber } from "@/lib/prof
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/ordens/nova")({
+  head: () => ({ meta: [
+    { title: "Nova ordem de serviço — ProFix" },
+    { name: "description", content: "Registre o aparelho, os defeitos e os acessórios recebidos na ProFix." },
+    { property: "og:title", content: "Nova ordem de serviço — ProFix" },
+    { property: "og:description", content: "Registre o aparelho, os defeitos e os acessórios recebidos na ProFix." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: NovaOS,
 });
 
@@ -40,6 +49,7 @@ function NovaOS() {
   const [reportedIssue, setReportedIssue] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
   const [checklist, setChecklist] = useState<string[]>([]);
+  const [accessories, setAccessories] = useState<string[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [usedParts, setUsedParts] = useState<UsedPart[]>([]);
@@ -126,6 +136,7 @@ function NovaOS() {
           reported_issue: reportedIssue.trim(),
           diagnosis: diagnosis.trim() || null,
           checklist,
+          accessories,
           photos,
           password_type: passwordType,
           password_value: passwordType === "none" ? null : passwordValue,
@@ -314,7 +325,10 @@ function NovaOS() {
                     variant={device.device_type === t ? "primary" : "outline"}
                     size="sm"
                     onClick={() => {
-                      if (t !== device.device_type) setChecklist([]);
+                      if (t !== device.device_type) {
+                        setChecklist([]);
+                        setAccessories([]);
+                      }
                       setDevice({ ...device, device_type: t });
                     }}
                   >
@@ -405,6 +419,8 @@ function NovaOS() {
                 })}
               </div>
             </div>
+
+            <ReceivedAccessories deviceType={device.device_type} value={accessories} onChange={setAccessories} />
 
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -537,6 +553,10 @@ function NovaOS() {
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Checklist</p>
                 <p>{checklist.length ? checklist.join(", ") : "nenhuma avaria marcada"}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Acessórios entregues pelo cliente</p>
+                <p>{accessories.join(", ") || "Nenhum acessório informado"}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Senha</p>
