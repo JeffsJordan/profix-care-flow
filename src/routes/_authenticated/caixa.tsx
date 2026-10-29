@@ -11,6 +11,14 @@ import { summarize } from "@/lib/metrics";
 import { formatDateTime, formatMoney } from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/caixa")({
+  head: () => ({ meta: [
+    { title: "Caixa — ProFix" },
+    { name: "description", content: "Consulte entradas, saídas e saldo do caixa da ProFix por período." },
+    { property: "og:title", content: "Caixa — ProFix" },
+    { property: "og:description", content: "Consulte entradas, saídas e saldo do caixa da ProFix por período." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Caixa,
 });
 

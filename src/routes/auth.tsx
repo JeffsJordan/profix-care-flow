@@ -8,6 +8,8 @@ import { Button, Field, Input } from "@/components/ui-kit";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Entrar — ProFix Assistência Técnica" },
       { name: "description", content: "Acesso da equipe ProFix ao sistema de ordens de serviço." },
       { property: "og:title", content: "Entrar — ProFix Assistência Técnica" },

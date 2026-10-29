@@ -6,6 +6,8 @@ import { Button } from "@/components/ui-kit";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "ProFix Assistência Técnica — Gestão da loja" },
       {
         name: "description",

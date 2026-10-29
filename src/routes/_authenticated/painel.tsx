@@ -15,6 +15,14 @@ import {
 } from "@/lib/profix";
 
 export const Route = createFileRoute("/_authenticated/painel")({
+  head: () => ({ meta: [
+    { title: "Painel — ProFix" },
+    { name: "description", content: "Acompanhe os atendimentos e os resultados da assistência técnica ProFix." },
+    { property: "og:title", content: "Painel — ProFix" },
+    { property: "og:description", content: "Acompanhe os atendimentos e os resultados da assistência técnica ProFix." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Painel,
 });
 
