@@ -11,3 +11,4 @@
 
 - Keep device defect and received-accessory catalogs in `src/lib/profix.ts` and use `ReceivedAccessories` for intake and detail editing so both screens share device-specific options.
 - Store received accessories separately in `service_orders.accessories`; they are customer belongings, not repair parts or stock movements.
+- Keep public homepage presentation in `src/routes/index.tsx` and scope its decorative styles to `.profix-home` so redesigns do not change the store management screens.

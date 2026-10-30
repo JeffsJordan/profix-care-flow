@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Refazer página inicial no estilo da referência, mantendo logo e atualizando e-mail e WhatsApp
+
 - [x] Adicionar impressoras e checklist específico
 - [x] Registrar acessórios recebidos por aparelho na criação e ficha da OS
 
