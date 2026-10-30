@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Search } from "lucide-react";
 import { useState } from "react";
-import { Logo } from "@/components/Logo";
+import { LogoHome } from "@/components/Logo";
 import { Button, Card, Field, Input } from "@/components/ui-kit";
 import { findPublicOrder } from "@/lib/public-order.functions";
 import { onlyDigits } from "@/lib/profix";
@@ -52,7 +52,7 @@ function Consulta() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md space-y-6">
         <div className="flex justify-center">
-          <Logo className="h-14" />
+          <LogoHome className="h-auto w-60 max-w-full sm:w-72" />
         </div>
         <Card>
           <h1 className="text-xl font-bold">Consultar minha ordem de serviço</h1>
