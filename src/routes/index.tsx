@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Cpu, FileText, Laptop, LogIn, Mail, MessageCircle, Printer, Search, Wrench } from "lucide-react";
+import { Cpu, Laptop, LogIn, Mail, MessageCircle, Printer, Search, Wrench } from "lucide-react";
 import { LogoHome } from "@/components/Logo";
 import { Button } from "@/components/ui-kit";
 
@@ -60,16 +60,13 @@ function Home() {
           <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             Reparos e manutenção com cuidado, transparência e atenção a cada detalhe para devolver o desempenho do seu equipamento.
           </p>
-          <div className="mt-8 grid w-full grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="mt-8 grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
             <Link to="/auth" className="min-w-0">
               <Button className="h-16 w-full px-3"><LogIn className="h-5 w-5 shrink-0" /><span>Entrar no sistema</span></Button>
             </Link>
             <Link to="/consulta" className="min-w-0">
               <Button variant="outline" className="h-16 w-full px-3"><Search className="h-5 w-5 shrink-0 text-primary" /><span>Consultar minha OS</span></Button>
             </Link>
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="min-w-0">
-              <Button variant="outline" className="h-16 w-full px-3"><FileText className="h-5 w-5 shrink-0 text-primary" /><span>Pedir um orçamento</span></Button>
-            </a>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="min-w-0">
               <Button variant="outline" className="h-16 w-full px-3"><MessageCircle className="h-5 w-5 shrink-0 text-primary" /><span>WhatsApp</span></Button>
             </a>
