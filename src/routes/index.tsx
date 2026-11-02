@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const WHATSAPP_URL = "https://wa.me/message/XVFH5T47U736O1";
+const WHATSAPP_URL = "https://api.whatsapp.com/message/XVFH5T47U736O1?autoload=1&app_absent=0";
 const EMAIL = "profixassistenciatec@gmail.com";
 
 const SERVICES = [
